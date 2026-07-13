@@ -37,13 +37,83 @@ model Asset {
 }
 
 model Transaction {
-  id        String          @id @default(cuid())
-  asset     Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assetId   String
-  type      TransactionType
-  quantity  Float
-  price     Float
-  date      DateTime
-  notes     String?
-  createdAt DateTime        @default(now())
+  id          String          @id @default(cuid())
+  portfolio   Portfolio       @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String
+  asset       Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId     String
+  type        TransactionType
+  quantity    Float
+  price       Float
+  date        DateTime
+  notes       String?
+  createdAt   DateTime        @default(now())
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  portfolio    Portfolio?
+  progress     Progress[]
+}
+
+model Portfolio {
+  id           String        @id @default(cuid())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String        @unique
+  startingCash Float         @default(10000)
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Track {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  level       String
+  orderIndex  Int
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id         String         @id @default(cuid())
+  track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  trackId    String
+  slug       String
+  title      String
+  videoUrl   String?
+  content    String
+  orderIndex Int
+  questions  QuizQuestion[]
+  progress   Progress[]
+
+  @@unique([trackId, slug])
+}
+
+model QuizQuestion {
+  id           String @id @default(cuid())
+  lesson       Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId     String
+  question     String
+  options      Json
+  correctIndex Int
+  orderIndex   Int
+}
+
+model Progress {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId   String
+  completed  Boolean  @default(false)
+  quizScore  Int?
+  quizTotal  Int?
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, lessonId])
 }

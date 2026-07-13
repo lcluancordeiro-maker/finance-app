@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Asset, AssetType } from "@/lib/types";
 import { ASSET_TYPE_ORDER } from "@/lib/types";
 import { computePosition } from "@/lib/portfolio";
@@ -13,7 +14,9 @@ import { AddAssetForm } from "@/components/AddAssetForm";
 import { AddTransactionForm } from "@/components/AddTransactionForm";
 
 export default function Home() {
+  const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [cashBalance, setCashBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddAsset, setShowAddAsset] = useState(false);
@@ -21,11 +24,16 @@ export default function Home() {
   const [lastRefresh, setLastRefresh] = useState<string | null>(null);
 
   const loadAssets = useCallback(async () => {
-    const res = await fetch("/api/assets");
-    const data = await res.json();
-    setAssets(data);
+    const [assetsRes, portfolioRes] = await Promise.all([fetch("/api/assets"), fetch("/api/portfolio")]);
+    if (assetsRes.status === 401 || portfolioRes.status === 401) {
+      router.push("/login");
+      return;
+    }
+    const [assetsData, portfolioData] = await Promise.all([assetsRes.json(), portfolioRes.json()]);
+    setAssets(assetsData);
+    setCashBalance(portfolioData.cashBalance);
     setLoading(false);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // fetch-on-mount: state updates happen after the async gap, not synchronously
@@ -75,7 +83,7 @@ export default function Home() {
         <div>
           <h1 className="text-2xl font-semibold">Carteira de investimentos</h1>
           <p className="mt-1 text-sm text-[#52514e] dark:text-[#c3c2b7]">
-            Acompanhe posições, aportes e rentabilidade em um só lugar.
+            Pratique operações de compra e venda com dinheiro virtual e cotações reais.
           </p>
         </div>
         <div className="flex gap-2">
@@ -99,7 +107,8 @@ export default function Home() {
         <p className="text-sm text-[#898781]">Carregando...</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <StatTile label="Saldo em caixa" value={cashBalance != null ? formatCurrency(cashBalance) : "—"} />
             <StatTile label="Valor investido" value={formatCurrency(totalInvested)} />
             <StatTile
               label="Valor atual"
@@ -140,7 +149,7 @@ export default function Home() {
       )}
 
       {txAsset && (
-        <Modal title="Nova transação" onClose={() => setTxAsset(null)}>
+        <Modal title="Nova ordem" onClose={() => setTxAsset(null)}>
           <AddTransactionForm
             asset={txAsset}
             onCreated={() => {

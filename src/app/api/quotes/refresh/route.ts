@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchQuotes, supportsAutoQuote } from "@/lib/quotes";
+import { requireAuth, HttpError } from "@/lib/auth";
 
 export async function POST() {
+  try {
+    await requireAuth();
+  } catch (err) {
+    if (err instanceof HttpError) return NextResponse.json({ error: err.message }, { status: err.status });
+    throw err;
+  }
+
   const assets = await prisma.asset.findMany();
   const quotable = assets.filter((a) => supportsAutoQuote(a.type));
 
