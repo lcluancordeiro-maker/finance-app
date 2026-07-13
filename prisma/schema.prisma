@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AssetType {
+  ACAO
+  FII
+  CRIPTO
+  RENDA_FIXA
+  ETF
+  OUTRO
+}
+
+enum TransactionType {
+  COMPRA
+  VENDA
+}
+
+model Asset {
+  id             String        @id @default(cuid())
+  ticker         String        @unique
+  name           String
+  type           AssetType
+  currentPrice   Float?
+  quoteUpdatedAt DateTime?
+  createdAt      DateTime      @default(now())
+  transactions   Transaction[]
+}
+
+model Transaction {
+  id        String          @id @default(cuid())
+  asset     Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId   String
+  type      TransactionType
+  quantity  Float
+  price     Float
+  date      DateTime
+  notes     String?
+  createdAt DateTime        @default(now())
+}
