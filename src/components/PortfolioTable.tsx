@@ -139,7 +139,7 @@ export function PortfolioTable({ assets, onChanged, onAddTransaction }: Props) {
                   <td className="py-2.5 pr-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-3 text-xs">
                       <button onClick={() => onAddTransaction(asset)} className="text-[#2a78d6] hover:underline">
-                        + transação
+                        + operação
                       </button>
                       <button onClick={() => deleteAsset(asset.id)} className="text-[#d03b3b] hover:underline">
                         remover
