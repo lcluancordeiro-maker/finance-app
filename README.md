@@ -12,15 +12,17 @@ PWA: instalável na tela inicial do celular (web app, sem apps nativos).
 
 - [Next.js](https://nextjs.org) (App Router) + TypeScript
 - Tailwind CSS
-- Prisma + SQLite (banco local em arquivo)
+- Prisma + PostgreSQL
 - [Recharts](https://recharts.org) para o gráfico de composição
 - Autenticação por sessão em cookie httpOnly (`bcryptjs` + `jose`)
 
 ## Como rodar localmente
 
+Precisa de um banco Postgres (ex: [Neon](https://neon.tech), [Supabase](https://supabase.com), [Railway](https://railway.app) — todos têm plano grátis, ou um Postgres local). Copie `.env.example` para `.env` e preencha `DATABASE_URL` com a connection string do seu banco.
+
 ```bash
 npm install
-npx prisma migrate dev   # cria o banco SQLite em prisma/dev.db, aplica o schema e roda o seed
+npx prisma migrate dev   # aplica o schema no Postgres e roda o seed
 npm run dev
 ```
 
@@ -90,17 +92,13 @@ quantidade vendida`. Ver `src/lib/portfolio.ts`.
 Veja `.env.example`:
 
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://user:password@host:5432/dbname?sslmode=require"
 SESSION_SECRET="troque-por-um-segredo-forte-em-producao"
 BRAPI_TOKEN=""   # opcional
 ```
 
 ## Limitações conhecidas / próximos passos
 
-- Banco SQLite em arquivo — não persiste em deploys serverless (ex: Vercel)
-  sem trocar para um banco gerenciado (Postgres, etc). Para produção, trocar
-  o `provider` do Prisma para `postgresql` e apontar `DATABASE_URL` para um
-  banco gerenciado.
 - PWA é apenas manifest + meta tags (instalável), sem service worker
   offline.
 - `DELETE /api/assets/:id` remove o ativo do catálogo compartilhado e
