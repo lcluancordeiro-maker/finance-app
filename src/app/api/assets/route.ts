@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { AssetType } from "@/generated/prisma/client";
+import { AssetType } from "@prisma/client";
 import { requireAuth, HttpError } from "@/lib/auth";
 
 export async function GET() {
