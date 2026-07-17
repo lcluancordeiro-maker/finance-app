@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, HttpError } from "@/lib/auth";
+import { getOrCreatePortfolio } from "@/lib/orders";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -24,11 +25,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
+// Não apaga o Asset em si — ele é um catálogo compartilhado entre usuários.
+// "Remover" aqui significa limpar o histórico de transações do usuário logado
+// para este ativo, sem afetar outros usuários que também o negociam.
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAuth();
+    const userId = await requireAuth();
     const { id } = await params;
-    await prisma.asset.delete({ where: { id } });
+
+    const portfolio = await getOrCreatePortfolio(userId);
+    await prisma.transaction.deleteMany({ where: { portfolioId: portfolio.id, assetId: id } });
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof HttpError) return NextResponse.json({ error: err.message }, { status: err.status });

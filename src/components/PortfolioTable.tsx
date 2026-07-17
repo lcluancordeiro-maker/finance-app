@@ -19,7 +19,7 @@ export function PortfolioTable({ assets, onChanged, onAddTransaction }: Props) {
   const [priceInput, setPriceInput] = useState("");
 
   async function deleteAsset(id: string) {
-    if (!confirm("Remover este ativo e todas as suas transações?")) return;
+    if (!confirm("Remover suas transações deste ativo? Isso não afeta outros usuários.")) return;
     await fetch(`/api/assets/${id}`, { method: "DELETE" });
     onChanged();
   }
