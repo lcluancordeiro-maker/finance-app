@@ -1,4 +1,4 @@
-import { TransactionType } from "@/generated/prisma/client";
+import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { computePosition } from "@/lib/portfolio";
 import { supportsAutoQuoteClient } from "@/lib/quotes-client";

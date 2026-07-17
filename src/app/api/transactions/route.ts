@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TransactionType } from "@/generated/prisma/client";
+import { TransactionType } from "@prisma/client";
 import { requireAuth, HttpError } from "@/lib/auth";
 import { placeOrder } from "@/lib/orders";
 
